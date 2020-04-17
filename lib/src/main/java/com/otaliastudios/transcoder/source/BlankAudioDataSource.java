@@ -1,5 +1,6 @@
 package com.otaliastudios.transcoder.source;
 
+import android.graphics.Bitmap;
 import android.media.MediaFormat;
 
 import androidx.annotation.NonNull;
@@ -60,6 +61,18 @@ public class BlankAudioDataSource implements DataSource {
     @Override
     public long getDurationUs() {
         return durationUs;
+    }
+
+    @NonNull
+    @Override
+    public MetaDataInfo getMetaDataInfo() {
+        return new MetaDataInfo();
+    }
+
+    @Nullable
+    @Override
+    public Bitmap getFrameAtTime(long timeMs, int dstWidth, int dstHeight) {
+        return null;
     }
 
     @Nullable

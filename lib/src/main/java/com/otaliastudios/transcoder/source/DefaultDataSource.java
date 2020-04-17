@@ -1,8 +1,12 @@
 package com.otaliastudios.transcoder.source;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.media.MediaExtractor;
 import android.media.MediaFormat;
 import android.media.MediaMetadataRetriever;
+import android.os.Build;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -171,6 +175,71 @@ public abstract class DefaultDataSource implements DataSource {
         }
     }
 
+    @NonNull
+    @Override
+    public MetaDataInfo getMetaDataInfo() {
+        ensureMetadata();
+        MetaDataInfo metaDataInfo = new MetaDataInfo();
+        try {
+            long duration = Long.parseLong(mMetadata
+                    .extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)) * 1000;
+            metaDataInfo.setDuration(duration);
+            int rotation = Integer.parseInt(mMetadata.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION));
+            metaDataInfo.setRotation(rotation);
+            int width = Integer.parseInt(mMetadata.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH));
+            int height = Integer.parseInt(mMetadata.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT));
+            metaDataInfo.setWidth(width);
+            metaDataInfo.setHeight(height);
+            float frameRate = 0;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                frameRate = Float.parseFloat(mMetadata.extractMetadata(MediaMetadataRetriever.METADATA_KEY_CAPTURE_FRAMERATE));
+            }
+            metaDataInfo.setFrameRate(frameRate);
+            int bitRate = Integer.parseInt(mMetadata.extractMetadata(MediaMetadataRetriever.METADATA_KEY_BITRATE));
+            metaDataInfo.setBitRate(bitRate);
+            String mimeType = mMetadata.extractMetadata(MediaMetadataRetriever.METADATA_KEY_MIMETYPE);
+            metaDataInfo.setMimeType(mimeType);
+            String date = mMetadata.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DATE);
+            metaDataInfo.setDate(date);
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+        }
+        return metaDataInfo;
+    }
+
+    @Nullable
+    @Override
+    public Bitmap getFrameAtTime(long timeMs, int dstWidth, int dstHeight) {
+        ensureMetadata();
+        //MediaMetadataRetriever.OPTION_CLOSEST_SYNC 在给定的时间检索出关键帧
+        if (dstWidth < 1 || dstHeight < 1) {
+            return mMetadata.getFrameAtTime(timeMs * 1000, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
+        } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O_MR1) {
+            Bitmap source = mMetadata.getFrameAtTime(timeMs * 1000, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
+            if (source == null) {
+                return null;
+            }
+            //以下的算法保证在Build.VERSION_CODES.O_MR1以下可以使用getScaledFrameAtTime的功能
+            //将大的视频帧转化为小图节省内存
+            boolean isOpposite = getOrientation() == 90 || getOrientation() == 270;
+            int sourceW = isOpposite ? source.getHeight() : source.getWidth();
+            int sourceH = isOpposite ? source.getWidth() : source.getHeight();
+
+            float scaleW = (float) dstWidth / sourceW;
+            float scaleH = (float) dstHeight / sourceH;
+            float dstScale = Math.min(scaleW, scaleH);
+            Matrix matrix = new Matrix();
+            matrix.postScale(dstScale, dstScale);
+            Bitmap dstBitmap = Bitmap.createBitmap(source, 0, 0, source.getWidth(), source.getHeight(), matrix, false);
+            if (!source.isRecycled()) {
+                source.recycle();
+            }
+            return dstBitmap;
+        } else {
+            return mMetadata.getScaledFrameAtTime(timeMs * 1000, MediaMetadataRetriever.OPTION_CLOSEST_SYNC, dstWidth, dstHeight);
+        }
+    }
+
     @Nullable
     @Override
     public MediaFormat getTrackFormat(@NonNull TrackType type) {
@@ -225,7 +294,8 @@ public abstract class DefaultDataSource implements DataSource {
         // Release the extractor and recreate.
         try {
             mExtractor.release();
-        } catch (Exception ignore) { }
+        } catch (Exception ignore) {
+        }
         mExtractor = new MediaExtractor();
         mExtractorApplied = false;
         // Release the metadata and recreate.
@@ -234,7 +304,8 @@ public abstract class DefaultDataSource implements DataSource {
         // make the metadata unusable as well.
         try {
             mMetadata.release();
-        } catch (Exception ignore) { }
+        } catch (Exception ignore) {
+        }
         mMetadata = new MediaMetadataRetriever();
         mMetadataApplied = false;
     }

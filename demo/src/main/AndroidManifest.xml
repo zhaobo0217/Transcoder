@@ -7,6 +7,7 @@
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="18" />
 
+    <uses-sdk tools:overrideLibrary="com.otaliastudios.transcoder,com.otaliastudios.opengl" />
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"

@@ -17,6 +17,12 @@
             android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
+            <ImageView
+                android:id="@+id/image"
+                android:layout_width="match_parent"
+                android:layout_height="300dp"
+                android:scaleType="fitStart"
+                android:background="@android:color/holo_orange_light"/>
 
             <!-- AUDIO CHANNELS -->
             <TextView
@@ -405,5 +411,6 @@
                 android:progress="0" />
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

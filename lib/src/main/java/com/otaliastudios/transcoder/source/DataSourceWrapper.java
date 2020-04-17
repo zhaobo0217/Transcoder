@@ -1,6 +1,7 @@
 package com.otaliastudios.transcoder.source;
 
 
+import android.graphics.Bitmap;
 import android.media.MediaFormat;
 
 import androidx.annotation.NonNull;
@@ -40,6 +41,18 @@ public class DataSourceWrapper implements DataSource {
     @Override
     public long getDurationUs() {
         return mSource.getDurationUs();
+    }
+
+    @NonNull
+    @Override
+    public MetaDataInfo getMetaDataInfo() {
+        return mSource.getMetaDataInfo();
+    }
+
+    @Nullable
+    @Override
+    public Bitmap getFrameAtTime(long timeMs, int dstWidth, int dstHeight) {
+        return mSource.getFrameAtTime(timeMs, dstWidth, dstHeight);
     }
 
     @Nullable

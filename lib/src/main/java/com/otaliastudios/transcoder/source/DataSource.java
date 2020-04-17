@@ -1,5 +1,6 @@
 package com.otaliastudios.transcoder.source;
 
+import android.graphics.Bitmap;
 import android.media.MediaFormat;
 
 import androidx.annotation.NonNull;
@@ -35,6 +36,25 @@ public interface DataSource {
      * @return duration in us
      */
     long getDurationUs();
+
+    /**
+     * Returns the {@link MetaDataInfo} from video Metadata information
+     *
+     * @return video MetaData
+     */
+    @NonNull
+    MetaDataInfo getMetaDataInfo();
+
+    /**
+     * Get video source key frame bitmap
+     *
+     * @param timeMs    key frame bitmap time pos
+     * @param dstWidth  dst bitmap width
+     * @param dstHeight dst bitmap height
+     * @return frame bitmap at {@param timeMs}
+     */
+    @Nullable
+    Bitmap getFrameAtTime(long timeMs, int dstWidth, int dstHeight);
 
     /**
      * Called before starting to inspect the input format for this track.
@@ -100,6 +120,7 @@ public interface DataSource {
 
     /**
      * Called to release resources for a given track.
+     *
      * @param type track type
      */
     void releaseTrack(@NonNull TrackType type);

@@ -3,12 +3,15 @@ package com.otaliastudios.transcoder.demo;
 import android.annotation.SuppressLint;
 import android.content.ClipData;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RadioGroup;
 import android.widget.TextView;
@@ -68,6 +71,7 @@ public class TranscoderActivity extends AppCompatActivity implements
     private EditText mTrimStartView;
     private EditText mTrimEndView;
     private TextView mAudioReplaceView;
+    private ImageView imageView;
 
     private boolean mIsTranscoding;
     private boolean mIsAudioOnly;
@@ -93,10 +97,12 @@ public class TranscoderActivity extends AppCompatActivity implements
 
     private TextWatcher mTextListener = new TextWatcher() {
         @Override
-        public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+        }
 
         @Override
-        public void onTextChanged(CharSequence s, int start, int before, int count) { }
+        public void onTextChanged(CharSequence s, int start, int before, int count) {
+        }
 
         @Override
         public void afterTextChanged(Editable s) {
@@ -138,6 +144,7 @@ public class TranscoderActivity extends AppCompatActivity implements
         mSpeedGroup = findViewById(R.id.speed);
         mAudioSampleRateGroup = findViewById(R.id.sampleRate);
         mAudioReplaceGroup = findViewById(R.id.replace);
+        imageView = findViewById(R.id.image);
 
         mAudioChannelsGroup.setOnCheckedChangeListener(mRadioGroupListener);
         mVideoFramesGroup.setOnCheckedChangeListener(mRadioGroupListener);
@@ -166,21 +173,36 @@ public class TranscoderActivity extends AppCompatActivity implements
     private void syncParameters() {
         int channels;
         switch (mAudioChannelsGroup.getCheckedRadioButtonId()) {
-            case R.id.channels_mono: channels = 1; break;
-            case R.id.channels_stereo: channels = 2; break;
-            default: channels = DefaultAudioStrategy.CHANNELS_AS_INPUT;
+            case R.id.channels_mono:
+                channels = 1;
+                break;
+            case R.id.channels_stereo:
+                channels = 2;
+                break;
+            default:
+                channels = DefaultAudioStrategy.CHANNELS_AS_INPUT;
         }
         int sampleRate;
         switch (mAudioSampleRateGroup.getCheckedRadioButtonId()) {
-            case R.id.sampleRate_32: sampleRate = 32000; break;
-            case R.id.sampleRate_48: sampleRate = 48000; break;
-            default: sampleRate = DefaultAudioStrategy.SAMPLE_RATE_AS_INPUT;
+            case R.id.sampleRate_32:
+                sampleRate = 32000;
+                break;
+            case R.id.sampleRate_48:
+                sampleRate = 48000;
+                break;
+            default:
+                sampleRate = DefaultAudioStrategy.SAMPLE_RATE_AS_INPUT;
         }
         boolean removeAudio;
         switch (mAudioReplaceGroup.getCheckedRadioButtonId()) {
-            case R.id.replace_remove: removeAudio = true; break;
-            case R.id.replace_yes: removeAudio = false; break;
-            default: removeAudio = false;
+            case R.id.replace_remove:
+                removeAudio = true;
+                break;
+            case R.id.replace_yes:
+                removeAudio = false;
+                break;
+            default:
+                removeAudio = false;
         }
         if (removeAudio) {
             mTranscodeAudioStrategy = new RemoveTrackStrategy();
@@ -193,23 +215,42 @@ public class TranscoderActivity extends AppCompatActivity implements
 
         int frames;
         switch (mVideoFramesGroup.getCheckedRadioButtonId()) {
-            case R.id.frames_24: frames = 24; break;
-            case R.id.frames_30: frames = 30; break;
-            case R.id.frames_60: frames = 60; break;
-            default: frames = DefaultVideoStrategy.DEFAULT_FRAME_RATE;
+            case R.id.frames_24:
+                frames = 24;
+                break;
+            case R.id.frames_30:
+                frames = 30;
+                break;
+            case R.id.frames_60:
+                frames = 60;
+                break;
+            default:
+                frames = DefaultVideoStrategy.DEFAULT_FRAME_RATE;
         }
         float fraction;
         switch (mVideoResolutionGroup.getCheckedRadioButtonId()) {
-            case R.id.resolution_half: fraction = 0.5F; break;
-            case R.id.resolution_third: fraction = 1F / 3F; break;
-            default: fraction = 1F;
+            case R.id.resolution_half:
+                fraction = 0.5F;
+                break;
+            case R.id.resolution_third:
+                fraction = 1F / 3F;
+                break;
+            default:
+                fraction = 1F;
         }
         float aspectRatio;
         switch (mVideoAspectGroup.getCheckedRadioButtonId()) {
-            case R.id.aspect_169: aspectRatio = 16F / 9F; break;
-            case R.id.aspect_43: aspectRatio = 4F / 3F; break;
-            case R.id.aspect_square: aspectRatio = 1F; break;
-            default: aspectRatio = 0F;
+            case R.id.aspect_169:
+                aspectRatio = 16F / 9F;
+                break;
+            case R.id.aspect_43:
+                aspectRatio = 4F / 3F;
+                break;
+            case R.id.aspect_square:
+                aspectRatio = 1F;
+                break;
+            default:
+                aspectRatio = 0F;
         }
         mTranscodeVideoStrategy = new DefaultVideoStrategy.Builder()
                 .addResizer(aspectRatio > 0 ? new AspectRatioResizer(aspectRatio) : new PassThroughResizer())
@@ -283,17 +324,29 @@ public class TranscoderActivity extends AppCompatActivity implements
 
         int rotation;
         switch (mVideoRotationGroup.getCheckedRadioButtonId()) {
-            case R.id.rotation_90: rotation = 90; break;
-            case R.id.rotation_180: rotation = 180; break;
-            case R.id.rotation_270: rotation = 270; break;
-            default: rotation = 0;
+            case R.id.rotation_90:
+                rotation = 90;
+                break;
+            case R.id.rotation_180:
+                rotation = 180;
+                break;
+            case R.id.rotation_270:
+                rotation = 270;
+                break;
+            default:
+                rotation = 0;
         }
 
         float speed;
         switch (mSpeedGroup.getCheckedRadioButtonId()) {
-            case R.id.speed_05x: speed = 0.5F; break;
-            case R.id.speed_2x: speed = 2F; break;
-            default: speed = 1F;
+            case R.id.speed_05x:
+                speed = 0.5F;
+                break;
+            case R.id.speed_2x:
+                speed = 2F;
+                break;
+            default:
+                speed = 1F;
         }
 
         // Launch the transcoding operation.
@@ -305,6 +358,11 @@ public class TranscoderActivity extends AppCompatActivity implements
             if (mTranscodeInputUri1 != null) {
                 DataSource source = new UriDataSource(this, mTranscodeInputUri1);
                 builder.addDataSource(new TrimDataSource(source, mTrimStartUs, mTrimEndUs));
+                Log.d("test-123", "start:" + System.currentTimeMillis());
+                Log.d("test-123", String.format("video metadata:%s", source.getMetaDataInfo().toString()));
+                Log.d("test-123", "end:" + System.currentTimeMillis());
+                Bitmap bitmap = source.getFrameAtTime(100, 200, 200);
+                imageView.setImageBitmap(bitmap);
             }
             if (mTranscodeInputUri2 != null) builder.addDataSource(this, mTranscodeInputUri2);
             if (mTranscodeInputUri3 != null) builder.addDataSource(this, mTranscodeInputUri3);
@@ -313,11 +371,13 @@ public class TranscoderActivity extends AppCompatActivity implements
                 DataSource source = new UriDataSource(this, mTranscodeInputUri1);
                 builder.addDataSource(TrackType.VIDEO, new TrimDataSource(source, mTrimStartUs, mTrimEndUs));
             }
-            if (mTranscodeInputUri2 != null) builder.addDataSource(TrackType.VIDEO, this, mTranscodeInputUri2);
-            if (mTranscodeInputUri3 != null) builder.addDataSource(TrackType.VIDEO, this, mTranscodeInputUri3);
+            if (mTranscodeInputUri2 != null)
+                builder.addDataSource(TrackType.VIDEO, this, mTranscodeInputUri2);
+            if (mTranscodeInputUri3 != null)
+                builder.addDataSource(TrackType.VIDEO, this, mTranscodeInputUri3);
             builder.addDataSource(TrackType.AUDIO, this, mAudioReplacementUri);
         }
-        mTranscodeFuture = builder.setListener(this)
+        /*mTranscodeFuture = builder.setListener(this)
                 .setAudioTrackStrategy(mTranscodeAudioStrategy)
                 .setVideoTrackStrategy(mTranscodeVideoStrategy)
                 .setVideoRotation(rotation)
@@ -329,7 +389,7 @@ public class TranscoderActivity extends AppCompatActivity implements
                     }
                 })
                 .setSpeed(speed)
-                .transcode();
+                .transcode();*/
     }
 
     @Override
