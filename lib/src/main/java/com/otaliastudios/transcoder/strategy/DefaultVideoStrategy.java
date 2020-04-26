@@ -96,6 +96,13 @@ public class DefaultVideoStrategy implements TrackStrategy {
         return new Builder(new AspectRatioResizer(aspectRatio));
     }
 
+    @NonNull
+    @SuppressWarnings("unused")
+    public static Builder aspectRatio(float offsetRatio, float aspectRatio) {
+        return new Builder(new AspectRatioResizer(offsetRatio, aspectRatio));
+    }
+
+
     /**
      * Creates a new {@link Builder} with an {@link AtMostResizer}
      * using given constraint.
@@ -201,6 +208,19 @@ public class DefaultVideoStrategy implements TrackStrategy {
         @NonNull
         public Builder mimeType(@NonNull String mimeType) {
             this.targetMimeType = mimeType;
+            return this;
+        }
+
+        /**
+         * 设置视频的质量
+         *
+         * @param quality 视频质量{@link VideoQualityEnum}VIDEO_QUALITY_480P,VIDEO_QUALITY_720P,VIDEO_QUALITY_1080P
+         * @return Builder
+         */
+        @NonNull
+        public Builder quality(@NonNull VideoQualityEnum quality) {
+            this.targetBitRate = quality.getBitRate();
+            this.targetFrameRate = quality.getFrameRate();
             return this;
         }
 

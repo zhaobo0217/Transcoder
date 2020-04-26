@@ -5,6 +5,10 @@ package com.otaliastudios.transcoder;
  * date: 2020/4/22
  */
 public final class TranscoderContants {
+    public static final long BITRATE_480 = 500L * 1000;
+    public static final long BITRATE_720 = 2L * 1000 * 1000;
+    public static final long BITRATE_1080 = 8L * 1000 * 1000;
+    public static final int FRAMERATE = 30;
     /**
      * Offset of proportional scaling of video
      */

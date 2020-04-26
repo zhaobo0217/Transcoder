@@ -7,7 +7,8 @@ import androidx.annotation.NonNull;
  */
 public class DefaultVideoStrategies {
 
-    private DefaultVideoStrategies() {}
+    private DefaultVideoStrategies() {
+    }
 
     /**
      * A {@link DefaultVideoStrategy} that uses 720x1280.
@@ -18,9 +19,10 @@ public class DefaultVideoStrategies {
      */
     @NonNull
     public static DefaultVideoStrategy for720x1280() {
+        VideoQualityEnum videoQualityEnum = VideoQualityEnum.VIDEO_QUALITY_720P;
         return DefaultVideoStrategy.exact(720, 1280)
-                .bitRate(2L * 1000 * 1000)
-                .frameRate(30)
+                .bitRate(videoQualityEnum.getBitRate())
+                .frameRate(videoQualityEnum.getFrameRate())
                 .keyFrameInterval(3F)
                 .build();
     }
@@ -35,9 +37,10 @@ public class DefaultVideoStrategies {
     @SuppressWarnings("unused")
     @NonNull
     public static DefaultVideoStrategy for360x480() {
+        VideoQualityEnum videoQualityEnum = VideoQualityEnum.VIDEO_QUALITY_480P;
         return DefaultVideoStrategy.exact(360, 480)
-                .bitRate(500L * 1000)
-                .frameRate(30)
+                .bitRate(videoQualityEnum.getBitRate())
+                .frameRate(videoQualityEnum.getFrameRate())
                 .keyFrameInterval(3F)
                 .build();
     }
