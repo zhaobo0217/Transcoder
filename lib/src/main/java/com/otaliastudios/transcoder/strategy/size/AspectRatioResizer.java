@@ -28,19 +28,35 @@ public class AspectRatioResizer implements Resizer {
     @NonNull
     @Override
     public Size getOutputSize(@NonNull Size inputSize) {
-        float inputRatio = (float) inputSize.getMajor() / inputSize.getMinor();
-        float outputRatio = aspectRatio > 1 ? aspectRatio : 1F / aspectRatio;
-        // now both are greater than 1 (major / minor).
-        if (inputRatio > outputRatio) {
-            // input is "wider". We must reduce the input major dimension.
-            return offsetRatio < 0 ? new Size(inputSize.getMinor(), (int) (outputRatio * inputSize.getMinor()))
-                    : new OffsetRatioSize(offsetRatio, inputSize.getMinor(), (int) (outputRatio * inputSize.getMinor()));
-        } else if (inputRatio < outputRatio) {
-            // input is more square. We must reduce the input minor dimension.
-            return offsetRatio < 0 ? new Size(inputSize.getMajor(), (int) (inputSize.getMajor() / outputRatio))
-                    : new OffsetRatioSize(offsetRatio, inputSize.getMajor(), (int) (inputSize.getMajor() / outputRatio));
+        if (inputSize instanceof ExactSize) {
+            ExactSize exactSize = (ExactSize) inputSize;
+            int width = exactSize.getWidth();
+            int height = exactSize.getHeight();
+            float ratio = (float) width / height;
+            if (ratio < aspectRatio) {
+                int outWidth = width;
+                int outHeight = (int) (width / aspectRatio);
+                return new OffsetRatioSize(offsetRatio, outWidth, outHeight);
+            } else if (ratio > aspectRatio) {
+                int outHeight = height;
+                int outWidth = (int) (height * aspectRatio);
+                return new OffsetRatioSize(offsetRatio, outWidth, outHeight);
+            } else {
+                return inputSize;
+            }
         } else {
-            return inputSize;
+            float inputRatio = (float) inputSize.getMajor() / inputSize.getMinor();
+            float outputRatio = aspectRatio > 1 ? aspectRatio : 1F / aspectRatio;
+            // now both are greater than 1 (major / minor).
+            if (inputRatio > outputRatio) {
+                // input is "wider". We must reduce the input major dimension.
+                return new Size(inputSize.getMinor(), (int) (outputRatio * inputSize.getMinor()));
+            } else if (inputRatio < outputRatio) {
+                // input is more square. We must reduce the input minor dimension.
+                return new Size(inputSize.getMajor(), (int) (inputSize.getMajor() / outputRatio));
+            } else {
+                return inputSize;
+            }
         }
     }
 }

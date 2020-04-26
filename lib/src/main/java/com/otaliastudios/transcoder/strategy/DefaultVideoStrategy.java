@@ -274,6 +274,9 @@ public class DefaultVideoStrategy implements TrackStrategy {
         } else if (outSize instanceof ExactSize) {
             outWidth = ((ExactSize) outSize).getWidth();
             outHeight = ((ExactSize) outSize).getHeight();
+            if (outSize instanceof OffsetRatioSize) {
+                outputFormat.setFloat(TranscoderContants.KEY_OFFSET_RATIO, ((OffsetRatioSize) outSize).getOffsetRatio());
+            }
         } else {
             outWidth = inWidth >= inHeight ? outSize.getMajor() : outSize.getMinor();
             outHeight = inWidth >= inHeight ? outSize.getMinor() : outSize.getMajor();
