@@ -33,6 +33,7 @@ import com.otaliastudios.transcoder.strategy.DefaultVideoStrategy;
 import com.otaliastudios.transcoder.strategy.RemoveTrackStrategy;
 import com.otaliastudios.transcoder.strategy.TrackStrategy;
 import com.otaliastudios.transcoder.strategy.size.AspectRatioResizer;
+import com.otaliastudios.transcoder.strategy.size.ExactResizer;
 import com.otaliastudios.transcoder.strategy.size.FractionResizer;
 import com.otaliastudios.transcoder.strategy.size.PassThroughResizer;
 import com.otaliastudios.transcoder.validator.DefaultValidator;
@@ -253,8 +254,8 @@ public class TranscoderActivity extends AppCompatActivity implements
                 aspectRatio = 0F;
         }
         mTranscodeVideoStrategy = new DefaultVideoStrategy.Builder()
-                .addResizer(aspectRatio > 0 ? new AspectRatioResizer(aspectRatio) : new PassThroughResizer())
-                .addResizer(new FractionResizer(fraction))
+                .addResizer(new AspectRatioResizer(7f/16, 1F))
+                //.addResizer(aspectRatio > 0 ? new AspectRatioResizer(aspectRatio) : new PassThroughResizer())
                 .frameRate(frames)
                 .build();
 
@@ -358,11 +359,6 @@ public class TranscoderActivity extends AppCompatActivity implements
             if (mTranscodeInputUri1 != null) {
                 DataSource source = new UriDataSource(this, mTranscodeInputUri1);
                 builder.addDataSource(new TrimDataSource(source, mTrimStartUs, mTrimEndUs));
-                Log.d("test-123", "start:" + System.currentTimeMillis());
-                Log.d("test-123", String.format("video metadata:%s", source.getMetaDataInfo().toString()));
-                Log.d("test-123", "end:" + System.currentTimeMillis());
-                Bitmap bitmap = source.getFrameAtTime(100, 200, 200);
-                imageView.setImageBitmap(bitmap);
             }
             if (mTranscodeInputUri2 != null) builder.addDataSource(this, mTranscodeInputUri2);
             if (mTranscodeInputUri3 != null) builder.addDataSource(this, mTranscodeInputUri3);
@@ -377,7 +373,7 @@ public class TranscoderActivity extends AppCompatActivity implements
                 builder.addDataSource(TrackType.VIDEO, this, mTranscodeInputUri3);
             builder.addDataSource(TrackType.AUDIO, this, mAudioReplacementUri);
         }
-        /*mTranscodeFuture = builder.setListener(this)
+        mTranscodeFuture = builder.setListener(this)
                 .setAudioTrackStrategy(mTranscodeAudioStrategy)
                 .setVideoTrackStrategy(mTranscodeVideoStrategy)
                 .setVideoRotation(rotation)
@@ -389,7 +385,7 @@ public class TranscoderActivity extends AppCompatActivity implements
                     }
                 })
                 .setSpeed(speed)
-                .transcode();*/
+                .transcode();
     }
 
     @Override

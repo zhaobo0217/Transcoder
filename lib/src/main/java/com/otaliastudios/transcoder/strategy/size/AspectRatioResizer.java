@@ -9,13 +9,20 @@ import androidx.annotation.NonNull;
 public class AspectRatioResizer implements Resizer {
 
     private final float aspectRatio;
+    private float offsetRatio = -1f;
 
     /**
      * Creates a new resizer.
+     *
      * @param aspectRatio the desired aspect ratio
      */
     public AspectRatioResizer(float aspectRatio) {
         this.aspectRatio = aspectRatio;
+    }
+
+    public AspectRatioResizer(float offsetRatio, float aspectRatio) {
+        this.aspectRatio = aspectRatio;
+        this.offsetRatio = offsetRatio;
     }
 
     @NonNull
@@ -26,10 +33,12 @@ public class AspectRatioResizer implements Resizer {
         // now both are greater than 1 (major / minor).
         if (inputRatio > outputRatio) {
             // input is "wider". We must reduce the input major dimension.
-            return new Size(inputSize.getMinor(), (int) (outputRatio * inputSize.getMinor()));
+            return offsetRatio < 0 ? new Size(inputSize.getMinor(), (int) (outputRatio * inputSize.getMinor()))
+                    : new OffsetRatioSize(offsetRatio, inputSize.getMinor(), (int) (outputRatio * inputSize.getMinor()));
         } else if (inputRatio < outputRatio) {
             // input is more square. We must reduce the input minor dimension.
-            return new Size(inputSize.getMajor(), (int) (inputSize.getMajor() / outputRatio));
+            return offsetRatio < 0 ? new Size(inputSize.getMajor(), (int) (inputSize.getMajor() / outputRatio))
+                    : new OffsetRatioSize(offsetRatio, inputSize.getMajor(), (int) (inputSize.getMajor() / outputRatio));
         } else {
             return inputSize;
         }

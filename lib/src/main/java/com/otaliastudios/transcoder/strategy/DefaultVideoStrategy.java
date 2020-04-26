@@ -4,20 +4,24 @@ import android.media.MediaCodecInfo;
 import android.media.MediaFormat;
 import android.os.Build;
 
+import androidx.annotation.NonNull;
+
+import com.otaliastudios.transcoder.TranscoderContants;
 import com.otaliastudios.transcoder.engine.TrackStatus;
 import com.otaliastudios.transcoder.internal.BitRates;
+import com.otaliastudios.transcoder.internal.Logger;
+import com.otaliastudios.transcoder.internal.MediaFormatConstants;
 import com.otaliastudios.transcoder.strategy.size.AspectRatioResizer;
 import com.otaliastudios.transcoder.strategy.size.AtMostResizer;
+import com.otaliastudios.transcoder.strategy.size.CustomCropResizer;
+import com.otaliastudios.transcoder.strategy.size.CustomExactSize;
 import com.otaliastudios.transcoder.strategy.size.ExactResizer;
 import com.otaliastudios.transcoder.strategy.size.ExactSize;
 import com.otaliastudios.transcoder.strategy.size.FractionResizer;
 import com.otaliastudios.transcoder.strategy.size.MultiResizer;
-import com.otaliastudios.transcoder.strategy.size.Size;
+import com.otaliastudios.transcoder.strategy.size.OffsetRatioSize;
 import com.otaliastudios.transcoder.strategy.size.Resizer;
-import com.otaliastudios.transcoder.internal.Logger;
-import com.otaliastudios.transcoder.internal.MediaFormatConstants;
-
-import androidx.annotation.NonNull;
+import com.otaliastudios.transcoder.strategy.size.Size;
 
 import java.util.List;
 
@@ -42,7 +46,9 @@ public class DefaultVideoStrategy implements TrackStrategy {
      */
     @SuppressWarnings("WeakerAccess")
     public static class Options {
-        private Options() {}
+        private Options() {
+        }
+
         private Resizer resizer;
         private long targetBitRate;
         private int targetFrameRate;
@@ -54,7 +60,7 @@ public class DefaultVideoStrategy implements TrackStrategy {
      * Creates a new {@link Builder} with an {@link ExactResizer}
      * using given dimensions.
      *
-     * @param firstSize the exact first size
+     * @param firstSize  the exact first size
      * @param secondSize the exact second size
      * @return a strategy builder
      */
@@ -117,6 +123,10 @@ public class DefaultVideoStrategy implements TrackStrategy {
         return new Builder(new AtMostResizer(atMostMinor, atMostMajor));
     }
 
+    public static Builder customCrop(int startX, int startY, int atMostMinor, int atMostMajor) {
+        return new Builder(new CustomCropResizer(atMostMinor, atMostMajor, startX, startY));
+    }
+
     public static class Builder {
         private MultiResizer resizer = new MultiResizer();
         private int targetFrameRate = DEFAULT_FRAME_RATE;
@@ -125,7 +135,8 @@ public class DefaultVideoStrategy implements TrackStrategy {
         private String targetMimeType = MediaFormatConstants.MIMETYPE_VIDEO_AVC;
 
         @SuppressWarnings("unused")
-        public Builder() { }
+        public Builder() {
+        }
 
         @SuppressWarnings("WeakerAccess")
         public Builder(@NonNull Resizer resizer) {
@@ -135,6 +146,7 @@ public class DefaultVideoStrategy implements TrackStrategy {
         /**
          * Adds another resizer to the resizer chain. By default, we use
          * a {@link MultiResizer} so you can add more than one resizer in chain.
+         *
          * @param resizer new resizer for backed {@link MultiResizer}
          * @return this for chaining
          */
@@ -148,6 +160,7 @@ public class DefaultVideoStrategy implements TrackStrategy {
         /**
          * The desired bit rate. Can optionally be {@link #BITRATE_UNKNOWN},
          * in which case the strategy will try to estimate the bitrate.
+         *
          * @param bitRate desired bit rate (bits per second)
          * @return this for chaining
          */
@@ -161,6 +174,7 @@ public class DefaultVideoStrategy implements TrackStrategy {
         /**
          * The desired frame rate. It will never be bigger than
          * the input frame rate, if that information is available.
+         *
          * @param frameRate desired frame rate (frames per second)
          * @return this for chaining
          */
@@ -172,6 +186,7 @@ public class DefaultVideoStrategy implements TrackStrategy {
 
         /**
          * The interval between key-frames in seconds.
+         *
          * @param keyFrameInterval desired key-frame interval
          * @return this for chaining
          */
@@ -232,15 +247,19 @@ public class DefaultVideoStrategy implements TrackStrategy {
             throw new RuntimeException("Resizer error:", e);
         }
         int outWidth, outHeight;
-        if (outSize instanceof ExactSize) {
+        if (outSize instanceof CustomExactSize) {
+            CustomExactSize customExactSize = (CustomExactSize) outSize;
+            outWidth = customExactSize.getWidth();
+            outHeight = customExactSize.getHeight();
+        } else if (outSize instanceof ExactSize) {
             outWidth = ((ExactSize) outSize).getWidth();
             outHeight = ((ExactSize) outSize).getHeight();
-        } else if (inWidth >= inHeight) {
-            outWidth = outSize.getMajor();
-            outHeight = outSize.getMinor();
         } else {
-            outWidth = outSize.getMinor();
-            outHeight = outSize.getMajor();
+            outWidth = inWidth >= inHeight ? outSize.getMajor() : outSize.getMinor();
+            outHeight = inWidth >= inHeight ? outSize.getMinor() : outSize.getMajor();
+            if (outSize instanceof OffsetRatioSize) {
+                outputFormat.setFloat(TranscoderContants.KEY_OFFSET_RATIO, ((OffsetRatioSize) outSize).getOffsetRatio());
+            }
         }
         LOG.i("Output width&height: " + outWidth + "x" + outHeight);
         boolean sizeDone = inSize.getMinor() <= outSize.getMinor();
@@ -303,7 +322,7 @@ public class DefaultVideoStrategy implements TrackStrategy {
      * Chooses one of the input sizes that is considered to be the best.
      * After thinking about it, I think the best size is the one that is closer to the
      * average aspect ratio.
-     *
+     * <p>
      * Of course, we must consider all formats' rotation.
      * The size returned is rotated in the reference of a format with rotation = 0.
      *

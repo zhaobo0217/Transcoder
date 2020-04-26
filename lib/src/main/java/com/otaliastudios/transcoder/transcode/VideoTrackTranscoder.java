@@ -21,6 +21,7 @@ import android.media.MediaFormat;
 
 import androidx.annotation.NonNull;
 
+import com.otaliastudios.transcoder.TranscoderContants;
 import com.otaliastudios.transcoder.engine.TrackType;
 import com.otaliastudios.transcoder.internal.MediaCodecBuffers;
 import com.otaliastudios.transcoder.sink.DataSink;
@@ -123,13 +124,22 @@ public class VideoTrackTranscoder extends BaseTrackTranscoder {
         float inputRatio = inputWidth / inputHeight;
         float outputWidth = flip ? outputFormat.getInteger(MediaFormat.KEY_HEIGHT) : outputFormat.getInteger(MediaFormat.KEY_WIDTH);
         float outputHeight = flip ? outputFormat.getInteger(MediaFormat.KEY_WIDTH) : outputFormat.getInteger(MediaFormat.KEY_HEIGHT);
+        float offsetRatio = -1F;
+        if (outputFormat.containsKey(TranscoderContants.KEY_OFFSET_RATIO)) {
+            offsetRatio = outputFormat.getFloat(TranscoderContants.KEY_OFFSET_RATIO);
+        }
+
         float outputRatio = outputWidth / outputHeight;
         float scaleX = 1, scaleY = 1;
+        float offsetRatioX = -1F, offsetRatioY = -1F;
         if (inputRatio > outputRatio) { // Input wider. We have a scaleX.
             scaleX = inputRatio / outputRatio;
+            offsetRatioX = offsetRatio;
         } else if (inputRatio < outputRatio) { // Input taller. We have a scaleY.
             scaleY = outputRatio / inputRatio;
+            offsetRatioY = offsetRatio;
         }
+        mDecoderOutputSurface.setOffsetRatio(offsetRatioX, offsetRatioY);
         mDecoderOutputSurface.setScale(scaleX, scaleY);
     }
 

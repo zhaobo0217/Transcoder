@@ -15,14 +15,14 @@ import com.otaliastudios.transcoder.internal.Logger;
 
 /**
  * The purpose of this class is to create a {@link Surface} associated to a certain GL texture.
- *
+ * <p>
  * The Surface is exposed through {@link #getSurface()} and we expect someone to draw there.
  * Typically this will be a {@link android.media.MediaCodec} instance, using this surface as output.
- *
+ * <p>
  * When {@link #drawFrame()} is called, this class will wait for a new frame from MediaCodec,
  * and draw it on the current EGL surface. The class itself does no GL initialization, and will
  * draw on whatever surface is current.
- *
+ * <p>
  * NOTE: By default, the Surface will be using a BufferQueue in asynchronous mode, so we
  * can potentially drop frames.
  */
@@ -41,6 +41,8 @@ public class VideoDecoderOutput {
     private float mScaleX = 1F;
     private float mScaleY = 1F;
     private int mRotation = 0;
+    private float mOffsetRatioX = -1F;
+    private float mOffsetRatioY = -1F;
 
     @GuardedBy("mFrameAvailableLock")
     private boolean mFrameAvailable;
@@ -79,6 +81,7 @@ public class VideoDecoderOutput {
 
     /**
      * Sets the frame scale along the two axes.
+     *
      * @param scaleX x scale
      * @param scaleY y scale
      */
@@ -90,6 +93,7 @@ public class VideoDecoderOutput {
     /**
      * Sets the desired frame rotation with respect
      * to its natural orientation.
+     *
      * @param rotation rotation
      */
     public void setRotation(int rotation) {
@@ -97,7 +101,19 @@ public class VideoDecoderOutput {
     }
 
     /**
+     * Sets the offsetRatio along the two axes.
+     *
+     * @param offsetRatioX x offset ratio
+     * @param offsetRatioY y offset ratio
+     */
+    public void setOffsetRatio(float offsetRatioX, float offsetRatioY) {
+        mOffsetRatioX = offsetRatioX;
+        mOffsetRatioY = offsetRatioY;
+    }
+
+    /**
      * Returns a Surface to draw onto.
+     *
      * @return the output surface
      */
     @NonNull
@@ -165,8 +181,9 @@ public class VideoDecoderOutput {
         float glScaleX = 1F / mScaleX;
         float glScaleY = 1F / mScaleY;
         // Compensate before scaling.
-        float glTranslX = (1F - glScaleX) / 2F;
-        float glTranslY = (1F - glScaleY) / 2F;
+        float glTranslX = mOffsetRatioX < 0 ? (1F - glScaleX) / 2 : Math.min(mOffsetRatioX, 1F - glScaleX);
+        float glTranslY = mOffsetRatioY < 0 ? (1F - glScaleY) / 2 : Math.min(mOffsetRatioY, 1F - glScaleY);
+        //Default is centerCrop that mOffsetX/mOffsetY = -1
         Matrix.translateM(mProgram.getTextureTransform(), 0, glTranslX, glTranslY, 0);
         // Scale.
         Matrix.scaleM(mProgram.getTextureTransform(), 0, glScaleX, glScaleY, 1);
