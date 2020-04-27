@@ -192,7 +192,8 @@ public abstract class DefaultDataSource implements DataSource {
             metaDataInfo.setHeight(height);
             float frameRate = 0;
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-                frameRate = Float.parseFloat(mMetadata.extractMetadata(MediaMetadataRetriever.METADATA_KEY_CAPTURE_FRAMERATE));
+                String frameRateStr = mMetadata.extractMetadata(MediaMetadataRetriever.METADATA_KEY_CAPTURE_FRAMERATE);
+                frameRate = frameRateStr == null ? 0 : Float.parseFloat(frameRateStr);
             }
             metaDataInfo.setFrameRate(frameRate);
             int bitRate = Integer.parseInt(mMetadata.extractMetadata(MediaMetadataRetriever.METADATA_KEY_BITRATE));
@@ -201,7 +202,7 @@ public abstract class DefaultDataSource implements DataSource {
             metaDataInfo.setMimeType(mimeType);
             String date = mMetadata.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DATE);
             metaDataInfo.setDate(date);
-        } catch (NumberFormatException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return metaDataInfo;
