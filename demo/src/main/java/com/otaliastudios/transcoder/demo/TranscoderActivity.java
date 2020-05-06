@@ -254,7 +254,7 @@ public class TranscoderActivity extends AppCompatActivity implements
                 aspectRatio = 0F;
         }
         mTranscodeVideoStrategy = new DefaultVideoStrategy.Builder()
-                .addResizer(new AspectRatioResizer(7f/16, 1F))
+                .addResizer(new AspectRatioResizer(0f, 1F))
                 //.addResizer(aspectRatio > 0 ? new AspectRatioResizer(aspectRatio) : new PassThroughResizer())
                 .frameRate(frames)
                 .build();

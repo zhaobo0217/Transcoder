@@ -177,12 +177,16 @@ public class VideoDecoderOutput {
      */
     private void drawNewFrame() {
         mSurfaceTexture.getTransformMatrix(mProgram.getTextureTransform());
+        boolean xFlip = (mRotation % 360) == 180 || (mRotation % 360) == 270;
+        boolean yFlip = (mRotation % 360) == 0 || (mRotation % 360) == 270;
         // Invert the scale.
         float glScaleX = 1F / mScaleX;
         float glScaleY = 1F / mScaleY;
+        float maxTranslX = 1F - glScaleX;
+        float maxTranslY = 1F - glScaleY;
         // Compensate before scaling.
-        float glTranslX = mOffsetRatioX < 0 ? (1F - glScaleX) / 2 : Math.min(mOffsetRatioX, 1F - glScaleX);
-        float glTranslY = mOffsetRatioY < 0 ? (1F - glScaleY) / 2 : Math.min(mOffsetRatioY, 1F - glScaleY);
+        float glTranslX = mOffsetRatioX < 0 ? (1F - glScaleX) / 2 : xFlip ? Math.max(0, maxTranslX - mOffsetRatioX) : Math.min(mOffsetRatioX, maxTranslX);
+        float glTranslY = mOffsetRatioY < 0 ? (1F - glScaleY) / 2 : yFlip ? Math.max(0, maxTranslY - mOffsetRatioY) : Math.min(mOffsetRatioY, maxTranslY);
         //Default is centerCrop that mOffsetX/mOffsetY = -1
         Matrix.translateM(mProgram.getTextureTransform(), 0, glTranslX, glTranslY, 0);
         // Scale.
