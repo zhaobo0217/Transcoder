@@ -3,19 +3,21 @@ package com.otaliastudios.transcoder.demo;
 import android.annotation.SuppressLint;
 import android.content.ClipData;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.FileProvider;
 
 import com.otaliastudios.transcoder.Transcoder;
 import com.otaliastudios.transcoder.TranscoderListener;
@@ -33,18 +35,11 @@ import com.otaliastudios.transcoder.strategy.DefaultVideoStrategy;
 import com.otaliastudios.transcoder.strategy.RemoveTrackStrategy;
 import com.otaliastudios.transcoder.strategy.TrackStrategy;
 import com.otaliastudios.transcoder.strategy.size.AspectRatioResizer;
-import com.otaliastudios.transcoder.strategy.size.ExactResizer;
-import com.otaliastudios.transcoder.strategy.size.FractionResizer;
-import com.otaliastudios.transcoder.strategy.size.PassThroughResizer;
 import com.otaliastudios.transcoder.validator.DefaultValidator;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.Future;
-
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.FileProvider;
 
 
 public class TranscoderActivity extends AppCompatActivity implements
@@ -254,7 +249,7 @@ public class TranscoderActivity extends AppCompatActivity implements
                 aspectRatio = 0F;
         }
         mTranscodeVideoStrategy = new DefaultVideoStrategy.Builder()
-                .addResizer(new AspectRatioResizer(0f, 1F))
+                .addResizer(new AspectRatioResizer(0f, 1.25F))
                 //.addResizer(aspectRatio > 0 ? new AspectRatioResizer(aspectRatio) : new PassThroughResizer())
                 .frameRate(frames)
                 .build();

@@ -36,10 +36,14 @@ public class AspectRatioResizer implements Resizer {
             if (ratio < aspectRatio) {
                 int outWidth = width;
                 int outHeight = (int) (width / aspectRatio);
+                if (outWidth % 2 != 0) outWidth--;
+                if (outHeight % 2 != 0) outHeight--;
                 return new OffsetRatioSize(offsetRatio, outWidth, outHeight);
             } else if (ratio > aspectRatio) {
                 int outHeight = height;
                 int outWidth = (int) (height * aspectRatio);
+                if (outWidth % 2 != 0) outWidth--;
+                if (outHeight % 2 != 0) outHeight--;
                 return new OffsetRatioSize(offsetRatio, outWidth, outHeight);
             } else {
                 return inputSize;
@@ -49,11 +53,19 @@ public class AspectRatioResizer implements Resizer {
             float outputRatio = aspectRatio > 1 ? aspectRatio : 1F / aspectRatio;
             // now both are greater than 1 (major / minor).
             if (inputRatio > outputRatio) {
+                int major = (int) (outputRatio * inputSize.getMinor());
+                int minor = inputSize.getMinor();
+                if (minor % 2 != 0) minor--;
+                if (major % 2 != 0) major--;
                 // input is "wider". We must reduce the input major dimension.
-                return new Size(inputSize.getMinor(), (int) (outputRatio * inputSize.getMinor()));
+                return new Size(minor, major);
             } else if (inputRatio < outputRatio) {
+                int major = inputSize.getMajor();
+                int minor = (int) (inputSize.getMajor() / outputRatio);
+                if (minor % 2 != 0) minor--;
+                if (major % 2 != 0) major--;
                 // input is more square. We must reduce the input minor dimension.
-                return new Size(inputSize.getMajor(), (int) (inputSize.getMajor() / outputRatio));
+                return new Size(major, minor);
             } else {
                 return inputSize;
             }
