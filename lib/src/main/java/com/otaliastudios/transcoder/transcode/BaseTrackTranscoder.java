@@ -79,7 +79,8 @@ public abstract class BaseTrackTranscoder implements TrackTranscoder {
 
     /**
      * Wraps the configure operation on the encoder.
-     * @param format output format
+     *
+     * @param format  output format
      * @param encoder encoder
      */
     protected void onConfigureEncoder(@NonNull MediaFormat format, @NonNull MediaCodec encoder) {
@@ -88,7 +89,8 @@ public abstract class BaseTrackTranscoder implements TrackTranscoder {
 
     /**
      * Wraps the start operation on the encoder.
-     * @param format output format
+     *
+     * @param format  output format
      * @param encoder encoder
      */
     @CallSuper
@@ -100,7 +102,8 @@ public abstract class BaseTrackTranscoder implements TrackTranscoder {
 
     /**
      * Wraps the configure operation on the decoder.
-     * @param format input format
+     *
+     * @param format  input format
      * @param decoder decoder
      */
     protected void onConfigureDecoder(@NonNull MediaFormat format, @NonNull MediaCodec decoder) {
@@ -109,7 +112,8 @@ public abstract class BaseTrackTranscoder implements TrackTranscoder {
 
     /**
      * Wraps the start operation on the decoder.
-     * @param format input format
+     *
+     * @param format  input format
      * @param decoder decoder
      */
     @SuppressWarnings({"WeakerAccess", "unused"})
@@ -122,10 +126,11 @@ public abstract class BaseTrackTranscoder implements TrackTranscoder {
 
     /**
      * Called when both codecs have been started with the given formats.
-     * @param inputFormat input format
+     *
+     * @param inputFormat  input format
      * @param outputFormat output format
-     * @param decoder decoder
-     * @param encoder encoder
+     * @param decoder      decoder
+     * @param encoder      encoder
      */
     protected void onCodecsStarted(@NonNull MediaFormat inputFormat, @NonNull MediaFormat outputFormat,
                                    @NonNull MediaCodec decoder, @NonNull MediaCodec encoder) {
@@ -174,13 +179,16 @@ public abstract class BaseTrackTranscoder implements TrackTranscoder {
 
     /**
      * Called when the decoder has defined its actual output format.
+     *
      * @param format format
      */
     @CallSuper
-    protected void onDecoderOutputFormatChanged(@NonNull MediaCodec decoder, @NonNull MediaFormat format) {}
+    protected void onDecoderOutputFormatChanged(@NonNull MediaCodec decoder, @NonNull MediaFormat format) {
+    }
 
     /**
      * Called when the encoder has defined its actual output format.
+     *
      * @param format format
      */
     @CallSuper
@@ -244,7 +252,7 @@ public abstract class BaseTrackTranscoder implements TrackTranscoder {
         }
 
         boolean isEos = (mBufferInfo.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0;
-        boolean hasSize = mBufferInfo.size > 0;
+        boolean hasSize = mBufferInfo.size >= 0;
         if (isEos) mIsDecoderEOS = true;
         if (isEos || hasSize) {
             onDrainDecoder(mDecoder,
@@ -294,11 +302,11 @@ public abstract class BaseTrackTranscoder implements TrackTranscoder {
      * Called to drain the decoder. Implementors are required to call {@link MediaCodec#releaseOutputBuffer(int, boolean)}
      * with the given bufferIndex at some point.
      *
-     * @param decoder the decoder
-     * @param bufferIndex the buffer index to be released
-     * @param bufferData  the buffer data
+     * @param decoder            the decoder
+     * @param bufferIndex        the buffer index to be released
+     * @param bufferData         the buffer data
      * @param presentationTimeUs frame timestamp
-     * @param endOfStream whether we are in end of stream
+     * @param endOfStream        whether we are in end of stream
      */
     protected abstract void onDrainDecoder(@NonNull MediaCodec decoder,
                                            int bufferIndex,
@@ -309,7 +317,8 @@ public abstract class BaseTrackTranscoder implements TrackTranscoder {
 
     /**
      * Called to feed the encoder with processed data.
-     * @param encoder the encoder
+     *
+     * @param encoder   the encoder
      * @param timeoutUs a timeout for this op
      * @return true if we want to keep working
      */
