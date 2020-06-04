@@ -214,9 +214,9 @@ public abstract class DefaultDataSource implements DataSource {
         ensureMetadata();
         //MediaMetadataRetriever.OPTION_CLOSEST_SYNC 在给定的时间检索出关键帧
         if (dstWidth < 1 || dstHeight < 1) {
-            return mMetadata.getFrameAtTime(timeMs * 1000, MediaMetadataRetriever.OPTION_CLOSEST);
+            return mMetadata.getFrameAtTime(timeMs * 1000, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
         } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O_MR1) {
-            Bitmap source = mMetadata.getFrameAtTime(timeMs * 1000, MediaMetadataRetriever.OPTION_CLOSEST);
+            Bitmap source = mMetadata.getFrameAtTime(timeMs * 1000, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
             if (source == null) {
                 return null;
             }
@@ -237,7 +237,7 @@ public abstract class DefaultDataSource implements DataSource {
             }
             return dstBitmap;
         } else {
-            return mMetadata.getScaledFrameAtTime(timeMs * 1000, MediaMetadataRetriever.OPTION_CLOSEST, dstWidth, dstHeight);
+            return mMetadata.getScaledFrameAtTime(timeMs * 1000, MediaMetadataRetriever.OPTION_CLOSEST_SYNC, dstWidth, dstHeight);
         }
     }
 
