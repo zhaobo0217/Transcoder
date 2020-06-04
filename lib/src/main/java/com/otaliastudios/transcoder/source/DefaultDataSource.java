@@ -253,6 +253,7 @@ public abstract class DefaultDataSource implements DataSource {
             String mime = format.getString(MediaFormat.KEY_MIME);
             if (type == TrackType.VIDEO && mime.startsWith("video/")) {
                 mIndex.set(TrackType.VIDEO, i);
+                format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 0);
                 mFormats.set(TrackType.VIDEO, format);
                 return format;
             }
