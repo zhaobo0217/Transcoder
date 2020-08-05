@@ -334,7 +334,7 @@ public class DefaultVideoStrategy implements TrackStrategy {
         int outBitRate = (int) (options.targetBitRate == BITRATE_UNKNOWN
                 ? BitRates.estimateVideoBitRate(outWidth, outHeight, outFrameRate)
                 : options.targetBitRate);
-        outputFormat.setInteger(MediaFormat.KEY_BIT_RATE, inputMaxBitRate > 0 ? Math.min(inputFrameRate, outBitRate) : outBitRate);
+        outputFormat.setInteger(MediaFormat.KEY_BIT_RATE, inputMaxBitRate > 0 ? Math.min(inputMaxBitRate, outBitRate) : outBitRate);
         return TrackStatus.COMPRESSING;
     }
 
