@@ -22,8 +22,12 @@ public class DefaultValidator implements Validator {
         if (videoStatus == TrackStatus.REMOVING || audioStatus == TrackStatus.REMOVING) {
             return true;
         }
+        //pass_though
+        if (videoStatus == TrackStatus.PASS_THROUGH || audioStatus == TrackStatus.PASS_THROUGH) {
+            return true;
+        }
 
-        // At this point it's either ABSENT or PASS_THROUGH so we are safe aborting
+        // At this point it's either ABSENT so we are safe aborting
         // the process.
         return false;
     }

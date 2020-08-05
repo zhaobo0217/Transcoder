@@ -3,6 +3,7 @@ package com.otaliastudios.transcoder.strategy;
 import android.media.MediaCodecInfo;
 import android.media.MediaFormat;
 import android.os.Build;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -299,14 +300,19 @@ public class DefaultVideoStrategy implements TrackStrategy {
 
         // Compute i frame.
         int inputIFrameInterval = getAverageIFrameInterval(inputFormats);
-        boolean frameIntervalDone = inputIFrameInterval >= options.targetKeyFrameInterval;
+        boolean frameIntervalDone = inputIFrameInterval <= options.targetKeyFrameInterval;
+
+        //Compute bitrate
+        int inputMaxBitRate = getMaxBitRate(inputFormats);
+        boolean bitRateDone = inputMaxBitRate > 0 && inputMaxBitRate <= options.targetBitRate;
+        LOG.i("inputMaxBitRate:" + inputMaxBitRate);
 
         // See if we should go on or if we're already compressed.
         // If we have more than 1 input format, we can't go through this branch,
         // or, for example, each part would be copied into output with its own size,
         // breaking the muxer.
         boolean canPassThrough = inputFormats.size() == 1;
-        if (canPassThrough && typeDone && sizeDone && frameRateDone && frameIntervalDone) {
+        if (canPassThrough && typeDone && sizeDone && frameRateDone && bitRateDone && frameIntervalDone) {
             LOG.i("Input minSize: " + inSize.getMinor() + ", desired minSize: " + outSize.getMinor() +
                     "\nInput frameRate: " + inputFrameRate + ", desired frameRate: " + outFrameRate +
                     "\nInput iFrameInterval: " + inputIFrameInterval + ", desired iFrameInterval: " + options.targetKeyFrameInterval);
@@ -328,7 +334,7 @@ public class DefaultVideoStrategy implements TrackStrategy {
         int outBitRate = (int) (options.targetBitRate == BITRATE_UNKNOWN
                 ? BitRates.estimateVideoBitRate(outWidth, outHeight, outFrameRate)
                 : options.targetBitRate);
-        outputFormat.setInteger(MediaFormat.KEY_BIT_RATE, outBitRate);
+        outputFormat.setInteger(MediaFormat.KEY_BIT_RATE, inputMaxBitRate > 0 ? Math.min(inputFrameRate, outBitRate) : outBitRate);
         return TrackStatus.COMPRESSING;
     }
 
@@ -396,6 +402,16 @@ public class DefaultVideoStrategy implements TrackStrategy {
             }
         }
         return (frameRate == Integer.MAX_VALUE) ? -1 : frameRate;
+    }
+
+    private int getMaxBitRate(@NonNull List<MediaFormat> formats) {
+        int bitRate = Integer.MIN_VALUE;
+        for (MediaFormat format : formats) {
+            if (format.containsKey(MediaFormat.KEY_BIT_RATE)) {
+                bitRate = Math.max(bitRate, format.getInteger(MediaFormat.KEY_BIT_RATE));
+            }
+        }
+        return bitRate == Integer.MIN_VALUE ? -1 : bitRate;
     }
 
     private int getAverageIFrameInterval(@NonNull List<MediaFormat> formats) {

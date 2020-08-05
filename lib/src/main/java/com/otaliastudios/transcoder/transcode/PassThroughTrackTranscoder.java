@@ -17,6 +17,7 @@ package com.otaliastudios.transcoder.transcode;
 
 import android.media.MediaCodec;
 import android.media.MediaFormat;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -44,6 +45,7 @@ public class PassThroughTrackTranscoder implements TrackTranscoder {
                                       @NonNull DataSink dataSink,
                                       @NonNull TrackType trackType,
                                       @NonNull TimeInterpolator timeInterpolator) {
+        Log.d("test-123", "PassThroughTrackTranscoder");
         mDataSource = dataSource;
         mDataSink = dataSink;
         mTrackType = trackType;
@@ -58,7 +60,8 @@ public class PassThroughTrackTranscoder implements TrackTranscoder {
     }
 
     @Override
-    public void setUp(@NonNull MediaFormat desiredOutputFormat) { }
+    public void setUp(@NonNull MediaFormat desiredOutputFormat) {
+    }
 
     @Override
     public boolean transcode(boolean forceInputEos) {

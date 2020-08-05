@@ -32,7 +32,9 @@ public class DefaultAudioStrategy implements TrackStrategy {
      */
     @SuppressWarnings("WeakerAccess")
     public static class Options {
-        private Options() {}
+        private Options() {
+        }
+
         private int targetChannels;
         private int targetSampleRate;
         private long targetBitRate;
@@ -57,7 +59,8 @@ public class DefaultAudioStrategy implements TrackStrategy {
         private String targetMimeType = MediaFormatConstants.MIMETYPE_AUDIO_AAC;
 
         @SuppressWarnings({"unused", "WeakerAccess"})
-        public Builder() { }
+        public Builder() {
+        }
 
         @NonNull
         public Builder channels(int channels) {
@@ -74,6 +77,7 @@ public class DefaultAudioStrategy implements TrackStrategy {
         /**
          * The desired bit rate. Can optionally be {@link #BITRATE_UNKNOWN},
          * in which case the strategy will try to estimate the bitrate.
+         *
          * @param bitRate desired bit rate (bits per second)
          * @return this for chaining
          */
@@ -117,8 +121,15 @@ public class DefaultAudioStrategy implements TrackStrategy {
     @Override
     public TrackStatus createOutputFormat(@NonNull List<MediaFormat> inputFormats,
                                           @NonNull MediaFormat outputFormat) {
+        boolean isAudioMimeTypeValid = isAudioMimeTypeValid(inputFormats);
+        if (options.targetChannels == CHANNELS_AS_INPUT && options.targetSampleRate == SAMPLE_RATE_AS_INPUT
+                && options.targetBitRate == BITRATE_UNKNOWN && isAudioMimeTypeValid) {
+            LOG.i("Audio transcode is same as input.Audio transcoder pass.");
+            return TrackStatus.PASS_THROUGH;
+        }
+        int inputChannelCount = getInputChannelCount(inputFormats);
         int outputChannels = (options.targetChannels == CHANNELS_AS_INPUT)
-                ? getInputChannelCount(inputFormats)
+                ? inputChannelCount
                 : options.targetChannels;
         int outputSampleRate = (options.targetSampleRate == SAMPLE_RATE_AS_INPUT)
                 ? getInputSampleRate(inputFormats)
@@ -167,5 +178,19 @@ public class DefaultAudioStrategy implements TrackStrategy {
         // This is very important to avoid useless upsampling in concatenated videos,
         // also because our upsample algorithm is not that good.
         return minRate;
+    }
+
+    private boolean isAudioMimeTypeValid(@NonNull List<MediaFormat> formats) {
+        try {
+            for (MediaFormat format : formats) {
+                if (format.containsKey(MediaFormat.KEY_AAC_PROFILE)
+                        && format.getInteger(MediaFormat.KEY_AAC_PROFILE) != MediaCodecInfo.CodecProfileLevel.AACObjectLC) {
+                    return false;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return true;
     }
 }

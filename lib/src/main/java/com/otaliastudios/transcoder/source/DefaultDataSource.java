@@ -253,7 +253,7 @@ public abstract class DefaultDataSource implements DataSource {
             String mime = format.getString(MediaFormat.KEY_MIME);
             if (type == TrackType.VIDEO && mime.startsWith("video/")) {
                 mIndex.set(TrackType.VIDEO, i);
-                format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 0);
+                fillVideoBitRate(format);
                 mFormats.set(TrackType.VIDEO, format);
                 return format;
             }
@@ -272,6 +272,26 @@ public abstract class DefaultDataSource implements DataSource {
         if (mSelectedTracks.isEmpty()) {
             release();
         }
+    }
+
+    private void fillVideoBitRate(@NonNull MediaFormat mediaFormat) {
+        if (mediaFormat.containsKey(MediaFormat.KEY_BIT_RATE)) {
+            return;
+        }
+        int bitRate = getBitRate();
+        if (bitRate > 0) {
+            mediaFormat.setInteger(MediaFormat.KEY_BIT_RATE, bitRate);
+        }
+    }
+
+    private int getBitRate() {
+        ensureMetadata();
+        try {
+            return Integer.parseInt(mMetadata.extractMetadata(MediaMetadataRetriever.METADATA_KEY_BITRATE));
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+        }
+        return -1;
     }
 
     protected void release() {

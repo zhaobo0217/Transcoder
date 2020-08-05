@@ -34,7 +34,9 @@ import com.otaliastudios.transcoder.strategy.DefaultAudioStrategy;
 import com.otaliastudios.transcoder.strategy.DefaultVideoStrategy;
 import com.otaliastudios.transcoder.strategy.RemoveTrackStrategy;
 import com.otaliastudios.transcoder.strategy.TrackStrategy;
+import com.otaliastudios.transcoder.strategy.VideoQualityEnum;
 import com.otaliastudios.transcoder.strategy.size.AspectRatioResizer;
+import com.otaliastudios.transcoder.strategy.size.AtMostResizer;
 import com.otaliastudios.transcoder.validator.DefaultValidator;
 
 import java.io.File;
@@ -249,9 +251,9 @@ public class TranscoderActivity extends AppCompatActivity implements
                 aspectRatio = 0F;
         }
         mTranscodeVideoStrategy = new DefaultVideoStrategy.Builder()
-                .addResizer(new AspectRatioResizer(0f, 1.25F))
+                .addResizer(new AtMostResizer(1280))
                 //.addResizer(aspectRatio > 0 ? new AspectRatioResizer(aspectRatio) : new PassThroughResizer())
-                .frameRate(frames)
+                .quality(VideoQualityEnum.VIDEO_QUALITY_720P)
                 .build();
 
         try {
