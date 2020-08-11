@@ -119,6 +119,13 @@ public interface DataSource {
     boolean isDrained();
 
     /**
+     * When this source need to clip.
+     *
+     * @return true if need clip source
+     */
+    boolean needClip();
+
+    /**
      * Called to release resources for a given track.
      *
      * @param type track type

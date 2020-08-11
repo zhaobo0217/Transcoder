@@ -274,6 +274,11 @@ public abstract class DefaultDataSource implements DataSource {
         }
     }
 
+    @Override
+    public boolean needClip() {
+        return false;
+    }
+
     private void fillVideoBitRate(@NonNull MediaFormat mediaFormat) {
         if (mediaFormat.containsKey(MediaFormat.KEY_BIT_RATE)) {
             return;

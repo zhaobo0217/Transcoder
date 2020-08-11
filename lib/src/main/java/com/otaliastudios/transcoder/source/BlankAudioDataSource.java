@@ -119,6 +119,11 @@ public class BlankAudioDataSource implements DataSource {
     }
 
     @Override
+    public boolean needClip() {
+        return false;
+    }
+
+    @Override
     public void releaseTrack(@NonNull TrackType type) {
         // Nothing to do
     }

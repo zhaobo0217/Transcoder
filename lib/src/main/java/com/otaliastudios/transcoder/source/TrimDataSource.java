@@ -64,6 +64,11 @@ public class TrimDataSource extends DataSourceWrapper {
     }
 
     @Override
+    public boolean needClip() {
+        return true;
+    }
+
+    @Override
     public void rewind() {
         super.rewind();
         trimDone = false;

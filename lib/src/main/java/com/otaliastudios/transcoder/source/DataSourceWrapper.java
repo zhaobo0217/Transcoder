@@ -92,6 +92,11 @@ public class DataSourceWrapper implements DataSource {
     }
 
     @Override
+    public boolean needClip() {
+        return mSource.needClip();
+    }
+
+    @Override
     public void releaseTrack(@NonNull TrackType type) {
         mSource.releaseTrack(type);
     }
