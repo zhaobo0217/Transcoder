@@ -16,6 +16,7 @@ public class TrimDataSource extends DataSourceWrapper {
     private long trimStartUs;
     private long trimDurationUs;
     private boolean trimDone = false;
+    private boolean needClip = false;
 
     @SuppressWarnings("WeakerAccess")
     public TrimDataSource(@NonNull DataSource source, long trimStartUs) {
@@ -33,6 +34,7 @@ public class TrimDataSource extends DataSourceWrapper {
             throw new IllegalArgumentException(
                     "Trim values cannot be greater than media duration.");
         }
+        this.needClip = trimStartUs > 0 || trimEndUs > 0;
         this.trimStartUs = trimStartUs;
         this.trimDurationUs = duration - trimStartUs - trimEndUs;
     }
@@ -65,7 +67,7 @@ public class TrimDataSource extends DataSourceWrapper {
 
     @Override
     public boolean needClip() {
-        return true;
+        return needClip;
     }
 
     @Override

@@ -56,6 +56,7 @@ public class Engine {
 
         /**
          * Called to notify progress. Same thread which initiated transcode is used.
+         *
          * @param progress Progress in [0.0, 1.0] range, or negative value if progress is unknown.
          */
         void onProgress(double progress);
@@ -78,6 +79,7 @@ public class Engine {
     /**
      * Returns the current progress.
      * Note: This method is thread safe.
+     *
      * @return the current progress
      */
     @SuppressWarnings("unused")
@@ -107,6 +109,16 @@ public class Engine {
         return sources;
     }
 
+    private boolean hasClipSource() {
+        List<DataSource> dataSources = mDataSources.requireVideo();
+        for (DataSource dataSource : dataSources) {
+            if (dataSource.needClip()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void computeTrackStatus(@NonNull TrackType type,
                                     @NonNull TrackStrategy strategy,
                                     @NonNull List<DataSource> sources) {
@@ -126,7 +138,7 @@ public class Engine {
                 status = strategy.createOutputFormat(inputFormats, outputFormat);
             } else if (!inputFormats.isEmpty()) {
                 throw new IllegalArgumentException("getTrackFormat returned null for " +
-                        (sources.size()-inputFormats.size()) + "/"  + sources.size() +
+                        (sources.size() - inputFormats.size()) + "/" + sources.size() +
                         " sources off " + type);
             }
         }
@@ -303,7 +315,7 @@ public class Engine {
      *
      * @param options Transcoding options.
      * @throws InvalidOutputFormatException when output format is not supported.
-     * @throws InterruptedException when cancel to transcode
+     * @throws InterruptedException         when cancel to transcode
      */
     public void transcode(@NonNull TranscoderOptions options) throws InterruptedException {
         mDataSink = options.getDataSink();
@@ -337,7 +349,10 @@ public class Engine {
         // ignore any Validator trying to abort the operation. The operation must happen
         // because we must apply the rotation.
         ignoreValidatorResult = videoStatus.isTranscoding() && options.getVideoRotation() != 0;
-        if (!options.getValidator().validate(videoStatus, audioStatus) && !ignoreValidatorResult) {
+        //if we have to clip sources,and the video should be transcoded.
+        boolean needClip = hasClipSource();
+        LOG.v("needClip: " + needClip);
+        if (!needClip && !options.getValidator().validate(videoStatus, audioStatus) && !ignoreValidatorResult) {
             throw new ValidatorException("Validator returned false.");
         }
 
@@ -390,7 +405,8 @@ public class Engine {
             try {
                 closeCurrentStep(TrackType.VIDEO);
                 closeCurrentStep(TrackType.AUDIO);
-            } catch (Exception ignore) {}
+            } catch (Exception ignore) {
+            }
             mDataSink.release();
         }
     }

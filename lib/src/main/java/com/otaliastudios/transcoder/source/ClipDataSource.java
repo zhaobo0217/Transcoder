@@ -17,9 +17,4 @@ public class ClipDataSource extends DataSourceWrapper {
                 clipStartUs,
                 source.getDurationUs() - clipEndUs));
     }
-
-    @Override
-    public boolean needClip() {
-        return true;
-    }
 }
