@@ -13,4 +13,5 @@ public final class TranscoderContants {
      * Offset of proportional scaling of video
      */
     public static final String KEY_OFFSET_RATIO = "key_offset_ratio";
+    public static final String KEY_EXTRA_NEED_CLIP = "key_extra_need_clip";
 }

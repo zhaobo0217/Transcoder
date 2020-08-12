@@ -37,6 +37,9 @@ public class TrimDataSource extends DataSourceWrapper {
         this.needClip = trimStartUs > 0 || trimEndUs > 0;
         this.trimStartUs = trimStartUs;
         this.trimDurationUs = duration - trimStartUs - trimEndUs;
+        if (source instanceof DefaultDataSource) {
+            ((DefaultDataSource) source).setNeedClip(needClip);
+        }
     }
 
     @Override

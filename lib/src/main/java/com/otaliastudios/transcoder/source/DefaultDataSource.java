@@ -12,6 +12,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.otaliastudios.transcoder.TranscoderContants;
 import com.otaliastudios.transcoder.engine.TrackType;
 import com.otaliastudios.transcoder.internal.ISO6709LocationParser;
 import com.otaliastudios.transcoder.internal.Logger;
@@ -38,6 +39,7 @@ public abstract class DefaultDataSource implements DataSource {
     private final TrackTypeMap<Long> mLastTimestampUs
             = new TrackTypeMap<>(0L, 0L);
     private long mFirstTimestampUs = Long.MIN_VALUE;
+    private boolean needClip;
 
     private void ensureMetadata() {
         if (!mMetadataApplied) {
@@ -61,6 +63,10 @@ public abstract class DefaultDataSource implements DataSource {
     protected abstract void applyExtractor(@NonNull MediaExtractor extractor) throws IOException;
 
     protected abstract void applyRetriever(@NonNull MediaMetadataRetriever retriever);
+
+    public void setNeedClip(boolean needClip) {
+        this.needClip = needClip;
+    }
 
     @Override
     public void selectTrack(@NonNull TrackType type) {
@@ -253,7 +259,7 @@ public abstract class DefaultDataSource implements DataSource {
             String mime = format.getString(MediaFormat.KEY_MIME);
             if (type == TrackType.VIDEO && mime.startsWith("video/")) {
                 mIndex.set(TrackType.VIDEO, i);
-                fillVideoBitRate(format);
+                fillVideoExtra(format);
                 mFormats.set(TrackType.VIDEO, format);
                 return format;
             }
@@ -276,10 +282,11 @@ public abstract class DefaultDataSource implements DataSource {
 
     @Override
     public boolean needClip() {
-        return false;
+        return needClip;
     }
 
-    private void fillVideoBitRate(@NonNull MediaFormat mediaFormat) {
+    private void fillVideoExtra(@NonNull MediaFormat mediaFormat) {
+        mediaFormat.setInteger(TranscoderContants.KEY_EXTRA_NEED_CLIP, needClip() ? 1 : -1);
         if (mediaFormat.containsKey(MediaFormat.KEY_BIT_RATE)) {
             return;
         }

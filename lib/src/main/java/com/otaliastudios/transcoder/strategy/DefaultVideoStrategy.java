@@ -312,7 +312,9 @@ public class DefaultVideoStrategy implements TrackStrategy {
         // or, for example, each part would be copied into output with its own size,
         // breaking the muxer.
         boolean canPassThrough = inputFormats.size() == 1;
-        if (canPassThrough && typeDone && sizeDone && frameRateDone && bitRateDone && frameIntervalDone) {
+        //if need clip must transcoder
+        boolean needClip = needSourcesClip(inputFormats);
+        if (canPassThrough && typeDone && sizeDone && frameRateDone && !needClip && bitRateDone && frameIntervalDone) {
             LOG.i("Input minSize: " + inSize.getMinor() + ", desired minSize: " + outSize.getMinor() +
                     "\nInput frameRate: " + inputFrameRate + ", desired frameRate: " + outFrameRate +
                     "\nInput iFrameInterval: " + inputIFrameInterval + ", desired iFrameInterval: " + options.targetKeyFrameInterval);
@@ -412,6 +414,18 @@ public class DefaultVideoStrategy implements TrackStrategy {
             }
         }
         return bitRate == Integer.MIN_VALUE ? -1 : bitRate;
+    }
+
+    private boolean needSourcesClip(@NonNull List<MediaFormat> formats) {
+        for (MediaFormat format : formats) {
+            if (format.containsKey(TranscoderContants.KEY_EXTRA_NEED_CLIP)) {
+                int value = format.getInteger(TranscoderContants.KEY_EXTRA_NEED_CLIP);
+                if (value > 0) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private int getAverageIFrameInterval(@NonNull List<MediaFormat> formats) {
